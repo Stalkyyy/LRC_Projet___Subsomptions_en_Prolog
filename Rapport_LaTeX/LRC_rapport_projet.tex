@@ -160,7 +160,7 @@ On travaille sur la T-Box correspondant aux connaissances sur les animaux suivan
     \includegraphics[width=1\textwidth]{./images/description_animaux.png}\\[1.5cm]
 \end{center}
 
-La traduction de ces connaissances en prolog est donnée dans le fichier \href{./LRC\_donneesProjet.pl}{LRC\_donneesProjet.pl}.
+La traduction de ces connaissances en prolog est donnée dans le fichier \href{./src/LRC\_donneesProjet.pl}{LRC\_donneesProjet.pl}.
     Ouvrir ce fichier pour inspecter les données. Traduire en formules de \(FL^-\) les 6 lignes associées à l'indication \textbf{/* à commenter */} et
     identifier les phrases qu'elles traduisent.\\
     Note : \(\bot\) n'existant pas en \(FL^-\), on traite ici \textbf{nothing} comme un concept atomique.
@@ -171,7 +171,7 @@ La traduction de ces connaissances en prolog est donnée dans le fichier \href{.
 
 \begin{tcolorbox}[colback=gray!10, colframe=blue!30, coltitle=black, title=Réponse à l'exercice 1 - 1/1]
 
-    Voici la traduction en \(FL^-\) des 6 lignes à commenter du fichier \href{./LRC\_donneesProjet.pl}{LRC\_donneesProjet.pl} ainsi que l'identification
+    Voici la traduction en \(FL^-\) des 6 lignes à commenter du fichier \href{./src/LRC\_donneesProjet.pl}{LRC\_donneesProjet.pl} ainsi que l'identification
         des phrases qu'elles traduisent dans la description des animaux vu précédemment.
 
     \begin{table}[H]
@@ -258,7 +258,7 @@ Il faut souligner la différentre entre \(\sqsubseteq\), qui correspond à des a
 
 On suppose que dans un premier temps que la TBox ne contient que des expressions du type \(A \sqsubseteq B\) où \(A\) et \(B\) sont des concepts
     atomiques et que \(C\) et \(D\) sont aussi atomiques. Pour vérifier si \(C \sqsubseteq_s D\) dans ce contexte, on propose les règles suivantes,
-    à écrire dans votre fichier prolog, dans lequel vous aurez préalablement copié-collé le contenu du fichier \href{./LRC\_donneesProjet.pl}{LRC\_donneesProjet.pl}.\\\\
+    à écrire dans votre fichier prolog, dans lequel vous aurez préalablement copié-collé le contenu du fichier \href{./src/LRC\_donneesProjet.pl}{LRC\_donneesProjet.pl}.\\\\
 \texttt{subsS1(C,C).}\\
 \texttt{subsS1(C,D) : -subs(C,D), C\textbackslash==D.}\\
 \texttt{subsS1(C,D) : -subs(C,E), subsS1(E,D).}\\
