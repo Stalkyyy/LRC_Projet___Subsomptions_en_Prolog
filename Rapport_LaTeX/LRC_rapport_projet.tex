@@ -416,7 +416,106 @@ On réécrit donc les règles sur \texttt{subsS1(C,D)} pour définir \texttt{sub
 
 \begin{tcolorbox}[colback=gray!10, colframe=blue!30, coltitle=black, title=Réponse à la question 2.4 - 1/1]
 
+    Cette requête réussit bien que \(\exists mange\) n'est pas un concept atomique parce qu'il existe techniquement une transition de \(souris\) à \(some(mange)\)
+        d'après notre TBox sur prolog. Ce dernier ne fait pas de "distinction" entre concept atomique et autre, et il trouve bien une valeur égale à \(some(mange)\).
 
+    \vspace{0.5cm}
+    \hrule
+    \vspace{0.5cm}
+        
+    En effet, on peut suivre les étapes suivantes :\\[-0.4cm]
+    \begin{itemize}
+        \item \texttt{subsS(souris, some(mange)) :- subs(souris, mammifere), subsS(mammifere, some(mange))}\\[-0.2cm]
+        \item \texttt{subs(souris, mammifere)} est vérifiée.
+        \item \texttt{subsS(mammifere, some(mange)) :- subs(mammifere, animal), subsS(animal, some(mange))}\\[-0.2cm]
+        \item \texttt{subs(mammifere, animal)} est vérifiée.
+        \item \texttt{subsS(animal, some(mange))} est vérifiée grâce à la troisième règle, on trouve bien \texttt{subs(animal, some(mange))}.
+    \end{itemize}
+
+\end{tcolorbox}
+
+
+
+%--------------------------------------------------------------------------------
+% Question 2.5
+%--------------------------------------------------------------------------------
+
+\newpage
+
+\phantomsection
+\addcontentsline{toc}{subsection}{5. Requêtes \(chat \sqsubseteq_s X\) et \(X \sqsubseteq_s mammifere\)}
+
+\textbf{2.5)} Que devraient renvoyer les requêtes \(chat \sqsubseteq_s X\) et \(X \sqsubseteq_s mammifere\) ? Vérifier que c'est bien le cas (il n'est pas nécessaire
+    d'éliminer les réponses doubles ou le false final).
+
+
+
+\begin{tcolorbox}[colback=gray!10, colframe=blue!30, coltitle=black, title=Réponse à la question 2.5 - 1/1]
+
+    La requête \(chat \sqsubseteq_s X\) est sensée renvoyer "tout ce qu'un chat puisse être" par la variable X d'après notre TBox. Dans ce cas là, nous devrions avoir plusieurs
+        résultats pour X. Un chat est un \textbf{chat} (subsumé par lui-même), un \textbf{félin}, un \textbf{mammifere}, un \textbf{animal}, un \textbf{être vivant} et
+        pour la même raison qu'à la question 2.4, il devrait renvoyer \textbf{some(mange)}, parce qu'un animal mange toujours au moins une chose et que prolog le renvoie.\\
+
+    \vspace{0.5cm}
+    \hrule
+    \vspace{0.5cm}
+          
+    La requête \(X \sqsubseteq_s mammifere\) est sensée renvoyer "toute entité étant une souris", dans notre TBox, il n'y a que la \textbf{souris} qui peut être renvoyée,
+        parce que tout concept est subsumé par lui-même. On ne peut pas trouver une quelconque transition de subsomption entre \(X\) et \(souris\). 
+
+    \vspace{0.5cm}
+    \hrule
+    \vspace{0.5cm}
+
+    Voici la vérification de notre réponse sur prolog, on a bien les mêmes résultats, ainsi qu'un false final, parce que Prolog teste d'autres possibilités même après avoir trouvé
+        toutes les solutions réalisables.\\[0.5cm]
+    \includegraphics[width=0.5\textwidth]{./images/chat_X.png}
+    \includegraphics[width=0.5\textwidth]{./images/X_souris.png}
+
+\end{tcolorbox}
+
+
+
+%--------------------------------------------------------------------------------
+% Question 2.6
+%--------------------------------------------------------------------------------
+
+\newpage
+
+\phantomsection
+\addcontentsline{toc}{subsection}{5. Règles pour l'équivalence, et requête \(lion \sqsubseteq_s \forall mange.animal\)}
+
+\textbf{2.6)} Ecrire des règles permettant de dériver \(A \sqsubseteq B\) et \(B \sqsubseteq A\) à partir de \(A \equiv B\). Tester avant et 
+    après ajout des règles la requête \(lion \sqsubseteq_s \forall mange.animal\).
+
+
+
+\begin{tcolorbox}[colback=gray!10, colframe=blue!30, coltitle=black, title=Réponse à la question 2.6 - 1/1]
+
+    Pour commencer, testons la requête avant l'ajout des règles. Prolog nous renvoie tout simplement \textbf{false}. En effet, nous avons aucune
+        subsomption dans la TBox de type \(subs(X, all(mange, animal))\), \(X\) étant une variable. On ne peut donc pas trouver de transition, et 
+        on ne peut pas utiliser l'équivalence \(carnivoreExc \equiv \forall mange.animal\) dû à l'absence des règles.
+
+    \vspace{0.5cm}
+    \hrule
+    \vspace{0.5cm}
+
+    Afin d'ajouter les règles, il faut savoir que \(C \equiv D \Rightarrow (C \sqsubseteq D) \land (D \sqsubseteq C)\). Il suffit donc de rajouter
+        deux nouvelles règles cherchant si \(C \equiv D\) est dans la TBox, pour \(C \sqsubseteq D\) et \(D \sqsubseteq C\) séparémment. On a donc :\\\\
+    \texttt{subsS(C, D, \_) :- equiv(C, D).}\\
+    \texttt{subsS(D, C, \_) :- equiv(C, D).}\\
+
+    L'ajout se trouve aux lignes 61-63 du fichier \href{./src/LRC\_donneesProjet.pl}{LRC\_donneesProjet.pl}.
+
+    \vspace{0.5cm}
+    \hrule
+    \vspace{0.5cm}
+
+    Avec les nouvelles règles, prolog nous renvoie \textbf{true}. En effet, il va en premier lieu tester plusieurs transitions de subsomption jusqu'à tomber
+        sur celle allant de \(lion\) à \(carnivoreExc\). Ensuite, il essayera donc de prouver que \(subsS(carnivoreExc, all(mange, animal))\) ce qu'il y arrivera
+        grâce à l'équivalence \(equiv(carnivoreExc, all(mange, animal))\).\\
+
+    Ensuite, il cherchera toujours d'autres chemins possible, sans résultat, renvoyant un false.
 
 \end{tcolorbox}
 
