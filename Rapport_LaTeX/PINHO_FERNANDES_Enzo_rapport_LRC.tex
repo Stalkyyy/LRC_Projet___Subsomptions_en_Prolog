@@ -460,8 +460,9 @@ On réécrit donc les règles sur \texttt{subsS1(C,D)} pour définir \texttt{sub
     \hrule
     \vspace{0.5cm}
           
-    La requête \(X \sqsubseteq_s mammifere\) est sensée renvoyer "toute entité étant une souris", dans notre TBox, il n'y a que la \textbf{souris} qui peut être renvoyée,
-        parce que tout concept est subsumé par lui-même. On ne peut pas trouver une quelconque transition de subsomption entre \(X\) et \(souris\). 
+    La requête \(X \sqsubseteq_s mammifere\) est sensée renvoyer "toute entité étant un mammifere", dans notre TBox, les \textbf{félins, canidés et souris} seront renvoyés, ainsi 
+        que \textbf{mammifère} parce que tout concept est subsumé par lui-même. Bien évidemment, on aura aussi les \textbf{chiens, chats et lions} qui seront renvoyés, parce qu'ils
+        sont subsumés par \texttt{felin} et \texttt{canide}.
 
     \vspace{0.5cm}
     \hrule
@@ -470,7 +471,7 @@ On réécrit donc les règles sur \texttt{subsS1(C,D)} pour définir \texttt{sub
     Voici la vérification de notre réponse sur prolog, on a bien les mêmes résultats, ainsi qu'un false final, parce que Prolog teste d'autres possibilités même après avoir trouvé
         toutes les solutions réalisables.\\[0.5cm]
     \includegraphics[width=0.5\textwidth]{./images/chat_X.png}
-    \includegraphics[width=0.5\textwidth]{./images/X_souris.png}
+    \includegraphics[width=0.5\textwidth]{./images/X_mammifere.png}
 
 \end{tcolorbox}
 
@@ -502,8 +503,8 @@ On réécrit donc les règles sur \texttt{subsS1(C,D)} pour définir \texttt{sub
 
     Afin d'ajouter les règles, il faut savoir que \(C \equiv D \Rightarrow (C \sqsubseteq D) \land (D \sqsubseteq C)\). Il suffit donc de rajouter
         deux nouvelles règles cherchant si \(C \equiv D\) est dans la TBox, pour \(C \sqsubseteq D\) et \(D \sqsubseteq C\) séparémment. On a donc :\\\\
-    \texttt{subsS(C, D, \_) :- equiv(C, D).}\\
-    \texttt{subsS(D, C, \_) :- equiv(C, D).}\\
+    \texttt{subs(C, D) :- equiv(C, D).}\\
+    \texttt{subs(D, C) :- equiv(C, D).}\\
 
     L'ajout se trouve aux lignes 61-63 du fichier \href{./src/LRC\_donneesProjet.pl}{LRC\_donneesProjet.pl}.
 
@@ -518,5 +519,9 @@ On réécrit donc les règles sur \texttt{subsS1(C,D)} pour définir \texttt{sub
     Ensuite, il cherchera toujours d'autres chemins possible, sans résultat, renvoyant un false.
 
 \end{tcolorbox}
+
+
+
+
 
 \end{document}
