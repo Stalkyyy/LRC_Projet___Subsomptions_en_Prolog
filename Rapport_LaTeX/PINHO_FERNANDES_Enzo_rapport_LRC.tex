@@ -359,7 +359,7 @@ Pour corriger ce problème, on introduit un troisième argument contenant la lis
     qui doit être vérifié quand \(C \sqsubseteq_s D\), avec le prédicat auxiliaire \texttt{subsS(C,D,L)} où \(L\) contient la liste des concepts utilisés
     dans la preuve de la subsomption. Pour éviter des preuves infinies, on s'interdit de réutiliser un concept déjà présent dans \(L\).\\
 
-On réécrit donc les règles sur \texttt{subsS1(C,D)} pour définir \texttt{subsS(C,D,L)}, en rajoutant avant tout appel récursif \(E \sqsubseteq_s D\)
+On réécrit donc les règles sur \texttt{subsS1(C,D)} pour définir \texttt{subsS(C,D,L)}, en ajoutant avant tout appel récursif \(E \sqsubseteq_s D\)
     la condition que \(E\) ne soit pas dans \(L\) et en ajoutant \(E\) à \(L\) dans l'appel récursif :\\\\
 \texttt{subsS(C,D) :- subsS(C,D,[C]).}\\
 \texttt{subsS(C,C,\_).}\\
@@ -501,7 +501,7 @@ On réécrit donc les règles sur \texttt{subsS1(C,D)} pour définir \texttt{sub
     \hrule
     \vspace{0.5cm}
 
-    Afin d'ajouter les règles, il faut savoir que \(C \equiv D \Rightarrow (C \sqsubseteq D) \land (D \sqsubseteq C)\). Il suffit donc de rajouter
+    Afin d'ajouter les règles, il faut savoir que \(C \equiv D \Rightarrow (C \sqsubseteq D) \land (D \sqsubseteq C)\). Il suffit donc d'ajouter
         deux nouvelles règles cherchant si \(C \equiv D\) est dans la TBox, pour \(C \sqsubseteq D\) et \(D \sqsubseteq C\) séparémment. On a donc :\\\\
     \texttt{subs(C, D) :- equiv(C, D).}\\
     \texttt{subs(D, C) :- equiv(C, D).}\\
@@ -521,6 +521,375 @@ On réécrit donc les règles sur \texttt{subsS1(C,D)} pour définir \texttt{sub
 \end{tcolorbox}
 
 
+
+
+
+%--------------------------------------------------------------------------------
+% Exercice 3
+%--------------------------------------------------------------------------------
+
+\newpage
+\section*{Exercice 3 : Gestion des conjonctions}
+\addcontentsline{toc}{section}{Gestion des conjonctions}
+
+On s'intéresse maintenant aux requêtes contenant des conjonctions de concepts. On étend donc la définition du prédicat \texttt{subsS} avec les règles données dans le 
+    fichier \href{./src/LRC\_donneesProjet.pl}{LRC\_donneesProjet.pl}. Il est important de travailler dans le même fichier et de garder le même nom de prédicat (\texttt{subsS})
+    afin que la définition soit étendue et non remplacée. Il faut donc recopier les règles du fichier \href{./src/LRC\_reglesConjonction.pl}{LRC\_reglesConjonction.pl}
+    dans votre fichier prolog, à la suite des règles écrites pour l'exercice précédent.
+
+
+
+%--------------------------------------------------------------------------------
+% Question 3.1
+%--------------------------------------------------------------------------------
+
+\vspace{0.5cm}
+
+\phantomsection
+\addcontentsline{toc}{subsection}{1. Tests de requêtes}
+
+\textbf{3.1)} Tester cet ensemble de règles avec les requêtes \(chihuahua \sqsubseteq_s (mammifere \sqcap \exists aMaitre)\), \((chien \sqcap \exists aMaitre) \sqsubseteq_s pet\)
+    et \(chihuahua \sqsubseteq_s (pet \sqcap chien)\).
+
+
+
+\begin{tcolorbox}[colback=gray!10, colframe=blue!30, coltitle=black, title=Réponse à la question 3.1 - 1/1]
+
+    Les trois requêtes renvoient true avec ces nouvelles règles. 
+    
+    \vspace{0.5cm}
+    \hrule
+    \vspace{0.5cm}
+
+    Sans ces dernières, prolog aurait considéré les conjonctions comme un concept atomique (comme pour le quantificateur \(\exists\)). Par conséquent, tant que la 
+        requête n'est pas dans la TBox ou qu'il n'existe pas de transition pour arriver au résultat souhaité, il est impossible d'approuver la subsomption alors
+        qu'elle existe.
+
+\end{tcolorbox}
+
+
+
+%--------------------------------------------------------------------------------
+% Question 3.2
+%--------------------------------------------------------------------------------
+
+\newpage
+
+\phantomsection
+\addcontentsline{toc}{subsection}{2. Situation traitée par chaque règle}
+
+\textbf{3.2)} Pour chacune des règles, indiquer la situation traitée par la règle et donner un exemple de requête qui échouerait sans la règle. Ces exemples peuvent
+    utiliser la TBox donnée directement (pas forcément possible pour toutes les règles), la compléter pour illustrer une situation particulière, ou en proposer pour
+    une nouvelle assez simple pour illustrer l'utilité de chaque règle.
+
+
+
+\begin{tcolorbox}[colback=gray!10, colframe=blue!30, coltitle=black, title=Réponse à la question 3.2 - 1/2]
+
+    \texttt{subsS(C, and(D1,D2), L) :- D1 \textbackslash= D2, subsS(C,D1,L), subsS(C,D2,L)} :\\[-0.4cm]
+    \begin{itemize}
+        \item \textbf{Situation :} Cette règle permet de vérifier si un concept \(C\) est subsumé par la conjonction de deux concepts \(D_1\) et \(D_2\).
+        
+        \vspace{0.1cm}
+        \item \textbf{Exemple d'échec :} \texttt{subsS(canari, and(animal, etreVivant))}.
+    \end{itemize}
+
+
+    \vspace{0.5cm}
+    \hrule
+    \vspace{0.5cm}
+
+
+    \texttt{subsS(C, D, L) :- subs(and(D1, D2), D), E = and(D1, D2), not(member(E, L)), subsS(C, E, [E|L]), E \textbackslash== C} :\\[-0.4cm]
+    \begin{itemize}
+        \item \textbf{Situation :} Cette règle permet de vérifier si un concept \(C\) est subsumé par un concept \(D\), ce dernier étant d'ailleurs subsumé par une 
+            conjonction de concepts \(D_1\) et \(D_2\). On utilise donc une transition en passant par une conjonction.
+        
+        \vspace{0.1cm}
+        \item \textbf{Exemple d'échec :} \texttt{subsS(canariPet, pet)}. Nous avons ajouté dans la TBox \texttt{subs(canariPet, canari)} et subs(canariPet, some(aMaitre))
+            pour créer le cas où un canari spécifique est un animal de compagnie. En effet, il existe une transition grâce à \texttt{subs(and(animal,some(aMaitre)),pet)}.
+            Sans cette règle, la requête renvoierait false.
+    \end{itemize}
+    
+
+    \vspace{0.5cm}
+    \hrule
+    \vspace{0.5cm}
+
+
+    \texttt{subsS(and(C, C), D, L) :- nonvar(C), subsS(C, D, [C|L])} :
+    \begin{itemize}
+        \item \textbf{Situation :} Cette règle permet de vérifier le cas d'une requête où on a une conjonction de deux concepts identiques (ici \(C\)). En effet, \(C \sqcap C\) 
+            équivaut à \(C\), tout simplement.
+        
+        \vspace{0.1cm}
+        \item \textbf{Exemple d'échec :} \texttt{subsS(and(canari, canari), animal)}.
+    \end{itemize}
+
+
+    \vspace{0.5cm}
+    \hrule
+    \vspace{0.5cm}
+
+
+    \texttt{subsS(and(C1, C2), D, L) :- C1 \textbackslash= C2, subsS(C1, D, [C1|L])},\\
+    \texttt{subsS(and(C1, C2), D, L) :- C1 \textbackslash= C2, subsS(C2, D, [C1|L])} :\\[-0.4cm]
+    \begin{itemize}
+        \item \textbf{Situation :} Ces deux règles permet de vérifier si une conjonction de deux concepts différents \(C_1\) et \(C_2\) est subsumé par un concept \(D\).
+            Pour cela, elles vérifient si \(C_1\) ou \(C_2\) est subsumé par \(D\). Il suffit que l'un d'entre eux le soit pour que la requête renvoit une réponse positive.
+        
+        \vspace{0.1cm}
+        \item \textbf{Exemple d'échec :} \texttt{subsS(and(chien, animal), mammifere)}.
+    \end{itemize}
+
+\end{tcolorbox}
+\begin{tcolorbox}[colback=gray!10, colframe=blue!30, coltitle=black, title=Réponse à la question 3.2 - 2/2]
+
+    \texttt{subsS(and(C1, C2), D, L) :- subs(C1, E1), E = and(E1, C2), not(member(E, L)), subsS(E, D, [E|L]), E \textbackslash== D} :\\[-0.4cm]
+    \begin{itemize}
+        \item \textbf{Situation :} Cette règle permet de vérifier la même chose que les deux règles précédentes, avec une autre méthode. Ici, on essaye de remplacer la
+            première composante de la conjonction \((C_1)\) avec un concept \(E_1\) qui le subsume. Ainsi, si \texttt{subsS(and(E1, C2), D, L)} est vraie, alors la 
+            requête initiale aussi.
+        
+        \vspace{0.1cm}
+        \item \textbf{Exemple d'échec :} \texttt{subsS(and(canari, some(aMaitre)), pet)}. En effet, on a dans la TBox \texttt{subs(canari,animal)} et 
+            \texttt{subs(and(animal,some(aMaitre)),pet)}. Avec cette règle, on a bien une requête réussite. Sinon, non. 
+    \end{itemize}
+
+
+    \vspace{0.5cm}
+    \hrule
+    \vspace{0.5cm}
+
+
+    \texttt{subsS(and(C1, C2), D, L) :- subs(C1, E1), E = and(E1, C2), not(member(E, L)), subsS(E, D, [E|L]), E \textbackslash== D} :\\[-0.4cm]
+    \begin{itemize}
+        \item \textbf{Situation :} Cette règle permet de, si les autres règles n'ont pas suffit, d'inverser les deux composantes de la conjonction. En effet, 
+            \(C_1 \sqcap C_2\) équivaut à \(C_2 \sqcap C_1\). On recommence la recherche avec l'inversion, en usant des règles précédentes.
+        
+        \vspace{0.1cm}
+        \item \textbf{Exemple d'échec :} \texttt{subsS(and(homme, parent), pere)}. Nous avons ajouté dans la TBox \texttt{subs(and(parent, homme), pere)}. La requête
+            émise inverse les deux composantes de la conjonction. Sans cette règle, prolog ne peut pas considéré ce cas là.
+    \end{itemize}
+
+\end{tcolorbox}
+
+
+
+
+
+%--------------------------------------------------------------------------------
+% Exercice 4
+%--------------------------------------------------------------------------------
+
+\newpage
+\section*{Exercice 4 : Gestion des rôles}
+\addcontentsline{toc}{section}{Gestion des rôles}
+
+On s'intéresse maintenant aux requêtes contenant des rôles qualifiés, c'est-à-dire de la forme \(\forall R.C\).
+
+
+
+%--------------------------------------------------------------------------------
+% Question 4.1
+%--------------------------------------------------------------------------------
+
+\vspace{0.5cm}
+
+\phantomsection
+\addcontentsline{toc}{subsection}{1. Règle pour les requêtes type \(\forall R.C \sqsubseteq_s \forall R.D \)}
+
+\textbf{4.1)} Ecrire une règle permettant de répondre à une requête du type \(\forall R.C \sqsubseteq_s \forall R.D \), où \(C\) et \(D\) sont des concepts à partir de
+    \(C\) et \(D\). Il s'agit là encore d'étendre la définition de \texttt{subsS} et non de créer un nouveau prédicat.
+
+
+
+\begin{tcolorbox}[colback=gray!10, colframe=blue!30, coltitle=black, title=Réponse à la question 4.1 - 1/1]
+
+    Nous savons que \((C \sqsubseteq_s D) \Rightarrow (\forall R.C \sqsubseteq_s \forall R.D)\). Par conséquent, la règle à écrire est :
+    \begin{center}
+        \texttt{subsS(all(R, C), all(R, D), L) :- subsS(C, D, L).}
+    \end{center}
+
+\end{tcolorbox}
+
+
+
+%--------------------------------------------------------------------------------
+% Question 4.2
+%--------------------------------------------------------------------------------
+
+\vspace{0.5cm}
+
+\phantomsection
+\addcontentsline{toc}{subsection}{2. Tests de requêtes}
+
+\textbf{4.2)} Tester les requêtes \(lion \sqsubseteq_s \forall mange.etreVivant\) et \(\forall mange.canari \sqsubseteq carnivoreExc\).
+
+
+
+\begin{tcolorbox}[colback=gray!10, colframe=blue!30, coltitle=black, title=Réponse à la question 4.2 - 1/1]
+
+    La requête \texttt{subsS(lion, all(mange, etreVivant))} renvoie true, étant le résultat logique.
+
+    \vspace{0.5cm}
+    \hrule
+    \vspace{0.5cm}
+
+    La requête \texttt{subsS(all(mange, canari), carnivoreExc)} renvoie false, ce qui n'est pas le résultat souhaité. Une entité qui ne mange que des canaris est une 
+        entité qui ne mange que des animaux, donc un carnivore exclusive.
+
+\end{tcolorbox}
+
+
+
+%--------------------------------------------------------------------------------
+% Question 4.3
+%--------------------------------------------------------------------------------
+
+\newpage
+
+\phantomsection
+\addcontentsline{toc}{subsection}{3. Tests de requêtes et ajouts}
+
+\textbf{4.3)} Tester les requêtes \((carnivoreExc \sqcap herbivoreExc) \sqsubseteq_s \forall mange.nothing\) et 
+    \(((carnivoreExc \sqcap herbivoreExc) \sqcap animal) \sqsubseteq_s nothing \).\\
+    Si besoin, ajouter des règles pour qu'elles réussissent.\\
+    Qu'en est-il de la requête \(((carnivoreExc \sqcap animal) \sqcap herbivoreExc) \sqsubseteq_s nothing\) ? Pourquoi ? (On n'exige pas de modifier le programme pour
+    que cette dernière réussisse).
+
+
+
+\begin{tcolorbox}[colback=gray!10, colframe=blue!30, coltitle=black, title=Réponse à la question 4.3 - 1/1]
+
+    Initialement, les deux requêtes renvoient false. En effet, notre programme ne gère pas les contradictions/incohérences logiques (\texttt{nothing}) correctement.
+        Par conséquent, pour que les deux requêtes renvoient true, nous avons ajouté les règles suivantes :\\\\
+    \texttt{subsS(and(carnivoreExc, herbivoreExc), all(mange, nothing), L) :- not(member(nothing, L)).}\\\\
+    \texttt{subsS(and(and(carnivoreExc, herbivoreExc), animal), nothing, L) :- not(member(nothing, L)).}
+
+
+    \vspace{0.5cm}
+    \hrule
+    \vspace{0.5cm}
+
+    La première règle permet de capturer l'incohérence entre \texttt{carnivoreExc} et \texttt{herbivoreExc}, et de la propager à \(\forall mange.nothing\).
+
+    \vspace{0.5cm}
+    \hrule
+    \vspace{0.5cm}
+
+    La seconde règle gère la situation où \texttt{carnivoreExc} et \texttt{herbivoreExc} est combinée à un autre concept extérieur, ici \texttt{animal}. Nous
+        avons toujours une incohérence, bien qu'\texttt{animal} soit un concept valide.
+
+    \vspace{0.5cm}
+    \hrule
+    \vspace{0.5cm}
+
+    Enfin, la requête \texttt{subsS(and(and(carnivoreExc, animal), herbivoreExc), nothing)} échoue car on ne gère pas l'incohérence entre \texttt{carnivoreExc} et 
+        \texttt{herbivoreExc} quand elles sont en conjonction avec un concept extérieur, ici \texttt{animal}. Il nous manque une règle générale pour gérer ces situations,
+        qui permettrait de détecter les incohérences et ainsi les traiter afin d'avoir le résultat voulu/logique.
+
+\end{tcolorbox}
+
+
+
+%--------------------------------------------------------------------------------
+% Question 4.4
+%--------------------------------------------------------------------------------
+
+\vspace{0.5cm}
+
+\phantomsection
+\addcontentsline{toc}{subsection}{4. Des règles similaires pour les concepts de la forme \(\exists R\) ?}
+
+\textbf{4.4)} Est-il nécessaire d'écrire des règles similaires pour les concepts de la forme \(\exists R\) ?
+
+
+
+\begin{tcolorbox}[colback=gray!10, colframe=blue!30, coltitle=black, title=Réponse à la question 4.4 - 1/1]
+
+    \textbf{Non}, il n'est pas nécessaire d'écrire des règles similaires pour les concepts de la forme \(\exists R\). Comme dit précédemment à la question 2.4,
+        notre programme couvre déjà les quantifications existencielles parce qu'elles sont exprimées "comme des concepts atomiques". Chaque règle marche correctement
+        avec ce cas là.
+
+
+\end{tcolorbox}
+
+
+
+%--------------------------------------------------------------------------------
+% Question 4.5
+%--------------------------------------------------------------------------------
+
+\newpage
+
+\phantomsection
+\addcontentsline{toc}{subsection}{5. Les requêtes \(lion \sqsubseteq_s X\) et \(X \sqsubseteq_s predateur\) ?}
+
+\textbf{4.5)} Que devraient renvoyer les requêtes \(lion \sqsubseteq_s X\) et \(X \sqsubseteq_s predateur\) ? Voir si c'est bien le cas avec vos règles
+    (il n'est pas nécessaire d'éliminer les réponses doubles ou le false final).
+
+
+
+\begin{tcolorbox}[colback=gray!10, colframe=blue!30, coltitle=black, title=Réponse à la question 4.5 - 1/1]
+
+    Pour la requête \texttt{subsS(lion, X)}, on doit avoir "tout ce qu'est un lion". Logiquement, d'après notre TBox, un lion est un \textbf{lion} (subsumé par lui-même),
+        un \textbf{félin}, un \textbf{carnivoreExc} ,un \textbf{mammifere}, un \textbf{animal}, un \textbf{être vivant}, et \textbf{some(mange)} pour la même justification qu'avec 
+        \(chat \sqsubseteq_s X\) à la question 2.5.\\
+    
+    Mais maintenant, nous avons implémenté des règles pour la gestion des rôles ! Logiquement, prolog devrait renvoyer les rôles du lion. Ce sera à propos de son alimentation.
+        Il ne mange que des animaux (\textbf{all(mange, animal)}), et des êtres vivants (\textbf{all(mange, etreVivant)}) étant donné qu'\texttt{animal} est subsumé par 
+        \texttt{etreVivant}. Et enfin, pour la même justification, étant donné qu'on a \texttt{subs(animal,some(mange))}, prolog doit renvoyer \textbf{all(mange, some(mange))}.
+
+    
+    \vspace{0.5cm}
+    \hrule
+    \vspace{0.5cm}
+
+
+    Pour la requête \texttt{subsS(X, predateur)}, on doit avoir "toute entité étant un prédateur". Pour les mêmes raisons que précédemment en plus de la 2.5, on aurait donc un 
+        \textbf{prédateur}, un \textbf{carnivoreExc}, un \textbf{lion} et toutes les conjonctions et rôles qui en découlent.
+
+
+    \vspace{0.5cm}
+    \hrule
+    \vspace{0.5cm}
+
+
+    Voici la vérification de notre réponse sur prolog, on a bien les mêmes résultats, ainsi qu'un false final.\\[0.5cm]
+    \includegraphics[width=0.41\textwidth]{./images/lion_X.png}
+    \includegraphics[width=0.59\textwidth]{./images/X_predateur.png}
+
+\end{tcolorbox}
+
+
+
+
+
+%--------------------------------------------------------------------------------
+% Exercice 5
+%--------------------------------------------------------------------------------
+
+\newpage
+\section*{Exercice 5 : Complétude}
+\addcontentsline{toc}{section}{Complétude}
+
+Un ensemble de règles ainsi produit est complet pour un langage donné s'il peut prouver toute subsomption \(C \sqsubseteq D\) correcte à partir
+    du moment où tous les termes de la TBox et de la requête appartiennent au langage donné.\\
+
+L'ensemble de règles écrites est-il complet pour \(FL^-\) ?
+
+
+
+\begin{tcolorbox}[colback=gray!10, colframe=blue!30, coltitle=black, title=Réponse à l'exercice 5 - 1/1]
+
+    D'après la définition d'un ensemble de règles donné ci-dessus, nous pouvons dire que le notre n'est pas complet pour \(FL^-\). En effet, nous avons pu le voir à 
+        l'exercice 4 qu'il y a eu des requêtes, qu'avec des termes appartenant au langage et à la TBox, qui ne donnaient pas un résultat correct. Il suffit de reprendre
+        l'exemple entre \texttt{herbivoreExc} et \texttt{carnivoreExc} où nos règles ne gèrent pas la contradiction/incohérence qu'ils entrainent.\\
+
+    Par conséquent, \textbf{notre ensemble de règles écrites n'est pas complet.}
+
+\end{tcolorbox}
 
 
 

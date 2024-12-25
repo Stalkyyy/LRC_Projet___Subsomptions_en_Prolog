@@ -34,15 +34,19 @@ subs(pet,some(aMaitre)).
 subs(animal,some(mange)).
 subs(some(aMaitre),all(aMaitre,personne)).           
 subs(and(animal,plante),nothing).
-subs(and(all(mange,nothing),some(mange)),nothing).   
+subs(and(all(mange,nothing),some(mange)),nothing). 
 
 
-% Rajout pour la question 2.6 : on a (C ≡ D) => (C ⊑ D) ^ (D ⊑ C).
+/* Rajout pour la question 4.2 : 2e règle */
+subs(canariPet, canari).
+subs(canariPet, some(aMaitre)).
+
+/* Rajout pour la question 4.2 : 7e règle */
+subs(and(parent, homme), pere).
+
+/* Rajout pour la question 2.6 : on a (C ≡ D) => (C ⊑ D) ^ (D ⊑ C). */
 subs(C, D) :- equiv(C, D).
 subs(C, D) :- equiv(D, C).
-
-% Rajout pour la question 4.2 : nothing représente le concept vide/contradictoire, il n'a aucun élément donc il est subsumé par tout concept.
-subs(nothing, _).
 
 equiv(carnivoreExc,all(mange,animal)).               
 equiv(herbivoreExc,all(mange,plante)).
@@ -91,13 +95,13 @@ subsS(C, D, L) :- subs(C, E), not(member(E, L)), subsS(E, D, [E | L]), E \== D.
  *  Contenu du fichier LRC_regleConjonction.pl
  */
 
-subsS(C,and(D1,D2),L):-D1\=D2,subsS(C,D1,L),subsS(C,D2,L).
-subsS(C,D,L):-subs(and(D1,D2),D),E=and(D1,D2),not(member(E,L)), subsS(C,E,[E|L]),E\==C.
-subsS(and(C,C),D,L):-nonvar(C),subsS(C,D,[C|L]).
-subsS(and(C1,C2),D,L):-C1\=C2,subsS(C1,D,[C1|L]).
-subsS(and(C1,C2),D,L):-C1\=C2,subsS(C2,D,[C2|L]).
-subsS(and(C1,C2),D,L):-subs(C1,E1),E=and(E1,C2),not(member(E,L)),subsS(E,D,[E|L]),E\==D.
-subsS(and(C1,C2),D,L):-Cinv=and(C2,C1),not(member(Cinv,L)),subsS(Cinv,D,[Cinv|L]).
+subsS(C, and(D1,D2), L) :- D1 \= D2, subsS(C,D1,L), subsS(C,D2,L).
+subsS(C, D, L) :- subs(and(D1, D2), D), E = and(D1, D2), not(member(E, L)), subsS(C, E, [E|L]), E \== C.
+subsS(and(C, C), D, L) :- nonvar(C), subsS(C, D, [C|L]).
+subsS(and(C1, C2), D, L) :- C1 \= C2, subsS(C1, D, [C1|L]).
+subsS(and(C1, C2), D, L) :- C1 \= C2, subsS(C2, D, [C2|L]).
+subsS(and(C1, C2), D, L) :- subs(C1, E1), E = and(E1, C2), not(member(E, L)), subsS(E, D, [E|L]), E \== D.
+subsS(and(C1, C2), D, L) :- Cinv = and(C2, C1), not(member(Cinv, L)), subsS(Cinv, D, [Cinv|L]).
 
 
 
@@ -111,11 +115,12 @@ subsS(and(C1,C2),D,L):-Cinv=and(C2,C1),not(member(Cinv,L)),subsS(Cinv,D,[Cinv|L]
 
 % ==================================================================================
 
-% Réponse pour la question 4.1 : on a (C ⊑_s D) => (∀ R.C ⊑_s ∀ R.D).
+/* Réponse pour la question 4.1 : on a (C ⊑_s D) => (∀ R.C ⊑_s ∀ R.D). */
 subsS(all(R, C), all(R, D), L) :- subsS(C, D, L).
 
-% Rajout pour la question 4.3 :
-%   - nothing représente le concept vide/contradictoire, il n'a aucun élément donc il est subsumé par tout concept.
-%       - subs(nothing, _) -> ligne 44
-%   - (D ⊑_s ∀ R.D1  ^  ∀ R.C ⊑_s D1) => ∀ R.C ⊑_s D.
-subsS(all(R, C), D, L) :- subsS(D, all(R, D1), L), subsS(all(R, C), D1, L).
+/*
+ * Rajout pour la question 4.3 :
+ *  - Actuellement, on ne gère pas les contradictions/incohérences logiques (nothing), on doit rajouter ces règles pour que les deux requêtes marchent.
+ */
+subsS(and(carnivoreExc, herbivoreExc), all(mange, nothing), L) :- not(member(nothing, L)).
+subsS(and(and(carnivoreExc, herbivoreExc), animal), nothing, L) :- not(member(nothing, L)).
